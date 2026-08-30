@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="stat-grid">
+    <div class="stat-card"><div class="stat-value">{{ todays_order_count }}</div><div class="stat-label">Orders Today</div></div>
+    <div class="stat-card"><div class="stat-value">${{ todays_revenue }}</div><div class="stat-label">Revenue Today (Completed)</div></div>
+    <div class="stat-card"><div class="stat-value">{{ pending_count }}</div><div class="stat-label">Pending Orders</div></div>
+    <div class="stat-card"><div class="stat-value">{{ active_count }}</div><div class="stat-label">Active Orders</div></div>
+    <div class="stat-card"><div class="stat-value">{{ tables_summary.occupied }}/{{ tables_summary.total }}</div><div class="stat-label">Tables Occupied</div></div>
+</div>
+
+<section class="card">
+    <h2>⚠️ Low Stock Alerts</h2>
+    {% if low_stock_items %}
+    <table>
+        <thead><tr><th>Item</th><th>Stock</th><th>Reorder Level</th></tr></thead>
+        <tbody>
+            {% for item in low_stock_items %}
+            <tr class="row-warning"><td>{{ item.name }}</td><td>{{ item.quantity_in_stock }} {{ item.unit }}</td><td>{{ item.reorder_level }} {{ item.unit }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="muted">All inventory is above reorder level.</p>
+    {% endif %}
+</section>
+
+<p><a href="{% url 'orders:staff_queue' %}" class="btn-primary">Go to Order Queue</a></p>
+{% endblock %}

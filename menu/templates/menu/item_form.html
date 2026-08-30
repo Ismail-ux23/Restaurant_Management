@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ item|yesno:"Edit,Add" }} Menu Item{% endblock %}
+{% block content %}
+<h1>{{ item|yesno:"Edit,Add" }} Menu Item</h1>
+<form method="POST" enctype="multipart/form-data" class="form-card">
+    {% csrf_token %}
+    {% for field in form %}
+    <label>{{ field.label }}</label>
+    {{ field }}
+    {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    {% endfor %}
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Save</button>
+        <a href="{% url 'menu:item_list' %}" class="btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

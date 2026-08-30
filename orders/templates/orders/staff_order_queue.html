@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Order Queue{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Active Order Queue</h1>
+    <a href="{% url 'orders:staff_all' %}" class="btn-secondary">View All Orders</a>
+</div>
+
+{% if orders %}
+<table>
+    <thead><tr><th>#</th><th>Customer</th><th>Type</th><th>Table</th><th>Status</th><th>Total</th><th>Placed</th><th></th></tr></thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.customer.username }}</td>
+            <td>{{ order.get_order_type_display }}</td>
+            <td>{{ order.table.number|default:"—" }}</td>
+            <td><span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+            <td>${{ order.total_amount }}</td>
+            <td>{{ order.created_at|date:"H:i" }}</td>
+            <td><a href="{% url 'orders:detail' order.id %}">Manage</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="muted">No active orders right now.</p>
+{% endif %}
+{% endblock %}

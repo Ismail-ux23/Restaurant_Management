@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Review {{ menu_item.name }}{% endblock %}
+{% block content %}
+<h1>Review {{ menu_item.name }}</h1>
+<form method="POST" class="form-card">
+    {% csrf_token %}
+    {% for field in form %}
+    <label>{{ field.label }}</label>
+    {{ field }}
+    {% endfor %}
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Submit Review</button>
+    </div>
+</form>
+{% endblock %}

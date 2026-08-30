@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="auth-card">
+    <h1>Log In</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label>Username</label>
+        <input type="text" name="username" required autofocus>
+        <label>Password</label>
+        <input type="password" name="password" required>
+        <button type="submit" class="btn-primary">Log In</button>
+    </form>
+    {% if form.errors %}
+        <div class="flash flash-error">Invalid username or password.</div>
+    {% endif %}
+    <p class="auth-switch">No account? <a href="{% url 'accounts:signup' %}">Sign up</a></p>
+</div>
+{% endblock %}

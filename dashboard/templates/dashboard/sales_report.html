@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Sales Report{% endblock %}
+{% block content %}
+<h1>Sales Report</h1>
+
+<form method="GET" class="filter-bar">
+    <select name="days" onchange="this.form.submit()">
+        <option value="7" {% if days == 7 %}selected{% endif %}>Last 7 days</option>
+        <option value="30" {% if days == 30 %}selected{% endif %}>Last 30 days</option>
+        <option value="90" {% if days == 90 %}selected{% endif %}>Last 90 days</option>
+    </select>
+</form>
+
+<div class="stat-grid">
+    <div class="stat-card"><div class="stat-value">${{ total_revenue }}</div><div class="stat-label">Total Revenue</div></div>
+    <div class="stat-card"><div class="stat-value">{{ total_orders }}</div><div class="stat-label">Completed Orders</div></div>
+    <div class="stat-card"><div class="stat-value">${{ avg_order_value|floatformat:2 }}</div><div class="stat-label">Avg Order Value</div></div>
+</div>
+
+<section class="card">
+    <h2>Revenue by Order Type</h2>
+    <table>
+        <thead><tr><th>Type</th><th>Orders</th><th>Revenue</th></tr></thead>
+        <tbody>
+            {% for row in by_type %}
+            <tr><td>{{ row.order_type }}</td><td>{{ row.count }}</td><td>${{ row.revenue }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3" class="muted">No completed orders in this period.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2>Revenue by Day</h2>
+    <table>
+        <thead><tr><th>Date</th><th>Orders</th><th>Revenue</th></tr></thead>
+        <tbody>
+            {% for row in by_day %}
+            <tr><td>{{ row.day }}</td><td>{{ row.count }}</td><td>${{ row.revenue }}</td></tr>
+            {% empty %}
+            <tr><td colspan="3" class="muted">No data.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section class="card">
+    <h2>Top-Selling Items</h2>
+    <table>
+        <thead><tr><th>Item</th><th>Units Sold</th></tr></thead>
+        <tbody>
+            {% for name, qty in top_items %}
+            <tr><td>{{ name }}</td><td>{{ qty }}</td></tr>
+            {% empty %}
+            <tr><td colspan="2" class="muted">No data.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

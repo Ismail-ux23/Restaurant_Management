@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Restock {{ item.name }}{% endblock %}
+{% block content %}
+<h1>Restock {{ item.name }}</h1>
+<p class="muted">Current stock: {{ item.quantity_in_stock }} {{ item.unit }}</p>
+<form method="POST" class="form-card">
+    {% csrf_token %}
+    <label>Quantity to add ({{ item.unit }})</label>
+    {{ form.quantity }}
+    <label>Note</label>
+    {{ form.note }}
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Restock</button>
+        <a href="{% url 'inventory:list' %}" class="btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

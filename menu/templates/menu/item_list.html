@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Menu Items{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Menu Items</h1>
+    <a href="{% url 'menu:item_add' %}" class="btn-primary">+ Add Item</a>
+</div>
+<p><a href="{% url 'menu:category_list' %}">Manage Categories</a> · <a href="{% url 'inventory:recipes' %}">Manage Ingredient Links</a></p>
+
+<table>
+    <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Available</th><th>Stock</th><th>Actions</th></tr></thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.category.name|default:"—" }}</td>
+            <td>${{ item.price }}</td>
+            <td>{{ item.is_available|yesno:"Yes,No" }}</td>
+            <td>{{ item.in_stock|yesno:"In stock,Out of stock" }}</td>
+            <td class="actions">
+                <a href="{% url 'menu:item_edit' item.id %}">Edit</a>
+                <form method="POST" action="{% url 'menu:item_delete' item.id %}" class="inline-form"
+                      onsubmit="return confirm('Delete {{ item.name }}?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-link btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="muted">No menu items yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.id }}{% endblock %}
+{% block content %}
+<h1>Order #{{ order.id }}</h1>
+<p>
+    <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+    &nbsp;·&nbsp; {{ order.get_order_type_display }}
+    {% if order.table %}&nbsp;·&nbsp; Table {{ order.table.number }}{% endif %}
+</p>
+
+<section class="card">
+    <h2>Items</h2>
+    <table>
+        <thead><tr><th>Item</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th>{% if order.status == 'completed' and not request.user.is_staff %}<th>Review</th>{% endif %}</tr></thead>
+        <tbody>
+            {% for line in order.items.all %}
+            <tr>
+                <td>{{ line.menu_item.name }}</td>
+                <td>{{ line.quantity }}</td>
+                <td>${{ line.unit_price }}</td>
+                <td>${{ line.subtotal }}</td>
+                {% if order.status == 'completed' and not request.user.is_staff %}
+                <td><a href="{% url 'orders:add_review' line.menu_item.id %}">Leave a review</a></td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p>Subtotal: ${{ order.subtotal }}</p>
+    {% if order.coupon %}<p>Discount ({{ order.coupon.code }}): -${{ order.discount_amount }}</p>{% endif %}
+    <p><strong>Total: ${{ order.total_amount }}</strong></p>
+</section>
+
+<section class="card">
+    <h2>Payment</h2>
+    <p>Method: {{ order.payment.get_method_display }} — Status: <strong>{{ order.payment.get_status_display }}</strong></p>
+    {% if request.user.is_staff and order.payment.status == 'pending' %}
+    <form method="POST" action="{% url 'orders:staff_mark_paid' order.id %}" class="inline-form">
+        {% csrf_token %}
+        <button type="submit" class="btn-secondary">Mark as Paid</button>
+    </form>
+    {% endif %}
+</section>
+
+{% if request.user.is_staff %}
+<section class="card">
+    <h2>Staff Actions</h2>
+    {% if possible_next_statuses %}
+    <div class="status-actions">
+        {% for next_status in possible_next_statuses %}
+        <form method="POST" action="{% url 'orders:staff_change_status' order.id next_status %}" class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="btn-secondary">Move to {{ next_status|title }}</button>
+        </form>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">This order is in a final state.</p>
+    {% endif %}
+</section>
+{% elif order.status == 'pending' or order.status == 'confirmed' %}
+<form method="POST" action="{% url 'orders:cancel' order.id %}" onsubmit="return confirm('Cancel this order?');">
+    {% csrf_token %}
+    <button type="submit" class="btn-link btn-danger">Cancel Order</button>
+</form>
+{% endif %}
+
+<section class="card">
+    <h2>History</h2>
+    <table>
+        <thead><tr><th>When</th><th>Change</th><th>By</th><th>Note</th></tr></thead>
+        <tbody>
+            {% for log in order.status_logs.all %}
+            <tr>
+                <td>{{ log.timestamp|date:"M d, Y H:i" }}</td>
+                <td>{{ log.from_status|default:"—" }} → {{ log.to_status }}</td>
+                <td>{{ log.changed_by.username|default:"—" }}</td>
+                <td>{{ log.note }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

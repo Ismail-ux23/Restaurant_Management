@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ item.name }}{% endblock %}
+{% block content %}
+<a href="{% url 'menu:list' %}">&larr; Back to menu</a>
+<h1>{{ item.name }}</h1>
+{% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}" class="detail-img">{% endif %}
+<p class="price">${{ item.price }}</p>
+<p>{{ item.description }}</p>
+
+{% if user.is_authenticated and not user.is_staff %}
+    {% if item.in_stock %}
+    <form method="POST" action="{% url 'orders:cart_add' item.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-primary">Add to Cart</button>
+    </form>
+    {% else %}
+    <p class="flash flash-error">Currently out of stock.</p>
+    {% endif %}
+{% endif %}
+
+<section class="card">
+    <h2>Reviews {% if item.average_rating %}(★ {{ item.average_rating }} average){% endif %}</h2>
+    {% for review in reviews %}
+    <div class="review">
+        <strong>{{ review.customer.username }}</strong> — ★{{ review.rating }}
+        <p>{{ review.comment }}</p>
+    </div>
+    {% empty %}
+    <p class="muted">No reviews yet.</p>
+    {% endfor %}
+</section>
+{% endblock %}

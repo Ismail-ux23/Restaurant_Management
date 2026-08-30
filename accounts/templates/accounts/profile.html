@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<h1>My Profile</h1>
+<form method="POST" class="form-card">
+    {% csrf_token %}
+    {% for field in form %}
+    <label>{{ field.label }}</label>
+    {{ field }}
+    {% endfor %}
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Save Changes</button>
+    </div>
+</form>
+{% endblock %}

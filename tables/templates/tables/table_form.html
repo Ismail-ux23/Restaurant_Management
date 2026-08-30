@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Edit Table{% endblock %}
+{% block content %}
+<h1>Edit Table {{ table.number }}</h1>
+<form method="POST" class="form-card">
+    {% csrf_token %}
+    {% for field in form %}
+    <label>{{ field.label }}</label>
+    {{ field }}
+    {% endfor %}
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Save</button>
+        <a href="{% url 'tables:list' %}" class="btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

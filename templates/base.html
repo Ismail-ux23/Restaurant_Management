@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Restaurant{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{% url 'menu:list' %}" class="nav-brand">🍽️ The Restaurant</a>
+        <div class="nav-links">
+            <a href="{% url 'menu:list' %}">Menu</a>
+            {% if user.is_authenticated %}
+                {% if not user.is_staff %}
+                    <a href="{% url 'orders:cart' %}">Cart</a>
+                    <a href="{% url 'orders:history' %}">My Orders</a>
+                    <a href="{% url 'accounts:profile' %}">Profile</a>
+                {% else %}
+                    <a href="{% url 'dashboard:home' %}">Dashboard</a>
+                    <a href="{% url 'orders:staff_queue' %}">Order Queue</a>
+                    <a href="{% url 'menu:item_list' %}">Menu Admin</a>
+                    <a href="{% url 'inventory:list' %}">Inventory</a>
+                    <a href="{% url 'tables:list' %}">Tables</a>
+                    <a href="{% url 'dashboard:sales_report' %}">Sales</a>
+                {% endif %}
+            {% endif %}
+        </div>
+        <div class="nav-user">
+            {% if user.is_authenticated %}
+                <span>{{ user.username }}{% if user.is_staff %} <em>(staff)</em>{% endif %}</span>
+                <form method="POST" action="{% url 'accounts:logout' %}" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-link">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'accounts:login' %}">Login</a>
+                <a href="{% url 'accounts:signup' %}">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="flash flash-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
