@@ -235,7 +235,7 @@ def staff_change_status(request, pk, new_status):
     if request.method == "POST":
         note = request.POST.get("note", "")
         try:
-            change_order_status(order, new_status, user=request.user, note=note)
+            order = change_order_status(order, new_status, user=request.user, note=note)
             messages.success(request, f"Order #{order.id} moved to {order.get_status_display()}.")
         except InsufficientStockError as e:
             messages.error(request, str(e))

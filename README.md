@@ -16,15 +16,16 @@ forms wired to a database.
   order, stock is deducted atomically across every ingredient needed — and
   if anything would go negative, the *entire* confirmation is rejected
   with a clear message, with zero partial changes (wrapped in a DB
-  transaction with row locking to avoid race conditions between two staff
-  confirming orders at once).
+  transaction with ingredient and order row locks on PostgreSQL).
+  Status changes reload the persisted order, so duplicate confirmations
+  cannot apply the same deduction again.
 - **A real order state machine.** Orders can only move
   `pending → confirmed → preparing → ready → completed`, or to `cancelled`
   from any non-terminal state. Skipping stages is rejected at the model
   level, not just hidden in the UI.
 - **Inventory is restored on cancellation.** If a confirmed order gets
-  cancelled, whatever stock it consumed is returned automatically, fully
-  logged.
+  cancelled, the quantities recorded in its deduction logs are returned automatically,
+  even if the recipe or order lines were edited afterwards.
 - **Table lifecycle.** Booking a dine-in order occupies the table;
   completing or cancelling the order frees it again.
 - **Coupon validation.** Codes are checked for active status, date range,
@@ -75,7 +76,7 @@ restaurant_management/
 ### 1. Prerequisites
 
 - [Visual Studio Code](https://code.visualstudio.com/)
-- [Python 3.10+](https://www.python.org/downloads/), on PATH
+- [Python 3.12+](https://www.python.org/downloads/), on PATH
 - VS Code's **Python extension** (by Microsoft)
 
 ### 2. Open the project
@@ -213,3 +214,24 @@ avoids so it runs standalone:
 - WebSocket-based live order status updates for the kitchen display
 - Stripe Checkout integration for real card payments
 - PDF invoice generation with the `reportlab` or `weasyprint` library
+
+## Order lifecycle checks
+
+```bash
+python manage.py test
+python manage.py makemigrations --check --dry-run
+```
+
+GitHub Actions runs on Python 3.12 with SQLite and PostgreSQL 16. Regression
+tests cover stale status requests, recipe changes after confirmation, returns
+from recorded deductions, shortages, failed audit writes and the normal lifecycle.
+The simultaneous-confirmation test runs on PostgreSQL; SQLite skips that test
+because it does not implement `select_for_update` row locks. SQLite can still
+raise database-lock errors under contention; it is intended for local use.
+
+The status service locks the order before validating its current state and locks
+ingredients in primary-key order. Conditional writes and audit logs are part of
+the same transaction. No schema migration is required for these fixes. Returns
+depend on retained inventory logs; deleting an inventory item deletes its logs.
+Concurrent checkout/table reservation and coupon usage-counter accounting are
+separate behavior and are not covered by these lifecycle fixes.
